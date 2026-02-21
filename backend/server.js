@@ -1,20 +1,17 @@
 require('dotenv').config();
+const { neon } = require('@neondatabase/serverless');
+const sql = neon(process.env.DATABASE_URL); 
 const express = require('express');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const cors = require('cors');
-const fs = require('fs');
 
 const app = express();
 const SECRET_KEY = process.env.JWT_SECRET; 
-const PORT = process.env.PORT;
+const PORT = process.env.PORT || 3000;
 
 app.use(express.json());
 app.use(cors());
-
-// --- HELPER DATABASE ---
-const getDB = () => JSON.parse(fs.readFileSync('./db.json'));
-const saveDB = (data) => fs.writeFileSync('./db.json', JSON.stringify(data, null, 2));
 
 // --- MIDDLEWARE VERIFIKASI TOKEN ---
 const verifyToken = (req, res, next) => {
@@ -23,87 +20,86 @@ const verifyToken = (req, res, next) => {
 
     jwt.verify(token, SECRET_KEY, (err, decoded) => {
         if (err) return res.status(401).json({ message: "Token tidak valid" });
-        req.user = decoded; // Berisi userId dan username
+        req.user = decoded; // Berisi userId dari token
         next();
     });
 };
 
-// --- AUTH ENDPOINTS (LOGIN & REGISTER) ---
+// --- AUTH ENDPOINTS ---
 app.post('/register', async (req, res) => {
     const { username, password } = req.body;
-    const db = getDB();
-    if (db.users.find(u => u.username === username)) return res.status(400).json({ message: "User sudah ada" });
+    try {
+        const existingUser = await sql`SELECT * FROM users WHERE username = ${username}`;
+        if (existingUser.length > 0) return res.status(400).json({ message: "User sudah ada" });
 
-    const hashedPassword = await bcrypt.hash(password, 10);
-    const newUser = { id: Date.now(), username, password: hashedPassword };
-    db.users.push(newUser);
-    saveDB(db);
-    res.status(201).json({ message: "Registrasi Berhasil" });
+        const hashedPassword = await bcrypt.hash(password, 10);
+        await sql`INSERT INTO users (username, password) VALUES (${username}, ${hashedPassword})`;
+        
+        res.status(201).json({ message: "Registrasi Berhasil" });
+    } catch (err) {
+        res.status(500).json({ message: "Error saat registrasi" });
+    }
 });
 
 app.post('/login', async (req, res) => {
     const { username, password } = req.body;
-    const db = getDB();
-    const user = db.users.find(u => u.username === username);
+    try {
+        const users = await sql`SELECT * FROM users WHERE username = ${username}`;
+        const user = users[0];
 
-    if (!user || !(await bcrypt.compare(password, user.password))) {
-        return res.status(401).json({ message: "Login Gagal" });
+        if (!user || !(await bcrypt.compare(password, user.password))) {
+            return res.status(401).json({ message: "Login Gagal" });
+        }
+
+        // Simpan id user ke dalam token sebagai userId
+        const token = jwt.sign({ userId: user.id, username: user.username }, SECRET_KEY, { expiresIn: '2h' });
+        res.json({ accessToken: token, username: user.username });
+    } catch (err) {
+        res.status(500).json({ message: "Error saat login" });
     }
-
-    const token = jwt.sign({ userId: user.id, username: user.username }, SECRET_KEY, { expiresIn: '2h' });
-    res.json({ accessToken: token, username: user.username });
 });
 
-// --- ACTIVITY ENDPOINTS (DENGAN FILTER USERID) ---
+// --- ACTIVITY ENDPOINTS ---
 
-// 1. Ambil data HANYA milik user yang login
-app.get('/activities', verifyToken, (req, res) => {
-    const db = getDB();
-    const myData = db.activities.filter(act => act.userId === req.user.userId);
-    res.json(myData);
+app.get('/activities', verifyToken, async (req, res) => {
+    try {
+        // Kolom di database namanya "userId" (pakai kutip dua di SQL jika case-sensitive)
+        const myData = await sql`SELECT * FROM activities WHERE "userId" = ${req.user.userId}`;
+        res.json(myData);
+    } catch (err) {
+        res.status(500).json({ message: "Gagal mengambil data" });
+    }
 });
 
-// 2. Tambah data (Otomatis menempelkan userId dari token)
-app.post('/activities', verifyToken, (req, res) => {
+app.post('/activities', verifyToken, async (req, res) => {
     const { task, date } = req.body;
-    const db = getDB();
-
-    const newActivity = {
-        id: Date.now(),
-        userId: req.user.userId, // DIAMBIL DARI TOKEN
-        task,
-        date,
-        status: "In Progress"
-    };
-
-    db.activities.push(newActivity);
-    saveDB(db);
-    res.status(201).json(newActivity);
+    try {
+        const result = await sql`
+            INSERT INTO activities ("userId", task, date) 
+            VALUES (${req.user.userId}, ${task}, ${date}) 
+            RETURNING *`;
+        res.status(201).json(result[0]);
+    } catch (err) {
+        res.status(500).json({ message: "Gagal menambah data" });
+    }
 });
 
-app.listen(PORT, () => console.log("Server berjalan di port 3000"));
+app.delete('/activities/:id', verifyToken, async (req, res) => {
+    const activityId = req.params.id;
+    try {
+        const deleted = await sql`
+            DELETE FROM activities 
+            WHERE id = ${activityId} AND "userId" = ${req.user.userId}
+            RETURNING *`;
 
-// --- ENDPOINT HAPUS AKTIVITAS ---
-app.delete('/activities/:id', verifyToken, (req, res) => {
-    const db = getDB();
-    const activityId = parseInt(req.params.id);
-    
-    // Cari aktivitas berdasarkan ID
-    const activity = db.activities.find(act => act.id === activityId);
+        if (deleted.length === 0) {
+            return res.status(404).json({ message: "Data tidak ditemukan atau bukan milik anda" });
+        }
 
-    // 1. Cek apakah data ada
-    if (!activity) {
-        return res.status(404).json({ message: "Data tidak ditemukan" });
+        res.json({ message: "Rencana berhasil dihapus" });
+    } catch (err) {
+        res.status(500).json({ message: "Gagal menghapus data" });
     }
-
-    // 2. CEK KEPEMILIKAN: Apakah userId di data sama dengan userId di token?
-    if (activity.userId !== req.user.userId) {
-        return res.status(403).json({ message: "Anda tidak punya akses menghapus data ini!" });
-    }
-
-    // 3. Hapus data jika pengecekan lolos
-    db.activities = db.activities.filter(act => act.id !== activityId);
-    saveDB(db);
-
-    res.json({ message: "Rencana berhasil dihapus" });
 });
+
+app.listen(PORT, () => console.log(`Server berjalan di port ${PORT}`));
