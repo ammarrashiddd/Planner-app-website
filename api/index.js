@@ -1,5 +1,5 @@
 require('dotenv').config();
-const { neon } = require('@neondatabase/serverless');
+const { neon } = require('./node_modules/@neondatabase/serverless');
 const sql = neon(process.env.DATABASE_URL); 
 const express = require('express');
 const jwt = require('jsonwebtoken');
@@ -37,6 +37,7 @@ app.post('/register', async (req, res) => {
         
         res.status(201).json({ message: "Registrasi Berhasil" });
     } catch (err) {
+        console.error(err);
         res.status(500).json({ message: "Error saat registrasi" });
     }
 });
@@ -103,3 +104,4 @@ app.delete('/activities/:id', verifyToken, async (req, res) => {
 });
 
 app.listen(PORT, () => console.log(`Server berjalan di port ${PORT}`));
+module.exports = app;

@@ -1,6 +1,6 @@
 import { WarningIcon, XIcon, Eye, EyeSlash } from "@phosphor-icons/react"
 import { useForm } from "react-hook-form"
-import useLogin from "../../api/useLogin"
+import useLogin from "../../hooks/useLogin"
 import z from "zod"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useState } from "react"

@@ -2,7 +2,7 @@ import { WarningIcon, XIcon, Eye, EyeSlash } from "@phosphor-icons/react"
 import { useForm } from "react-hook-form"
 import z from "zod"
 import { zodResolver } from "@hookform/resolvers/zod"
-import useRegister from "../../api/useRegister"
+import useRegister from "../../hooks/useRegister"
 import { useState } from "react"
 import { useNavigate } from "react-router"
 import registerImg from "../../assets/images/loginImage.jpg";
