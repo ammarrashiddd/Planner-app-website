@@ -21,22 +21,25 @@ export default function useLogin() {
         body: JSON.stringify(data),
       });
 
+      // Cek apakah response berupa JSON sebelum di-parse
+      const contentType = response.headers.get("content-type");
+      if (!contentType || !contentType.includes("application/json")) {
+        throw new Error("Server did not return JSON");
+      }
+
       const result = await response.json();
 
       if (response.ok) {
-        // Simpan token (pastikan backend mengirim key 'accessToken')
-        localStorage.setItem("authToken", result.accessToken);
-        // Opsional: Simpan username untuk sapaan di Dashboard
+        // Gunakan nama key yang konsisten dengan backend (contoh: result.token)
+        localStorage.setItem("authToken", result.accessToken || result.token);
         localStorage.setItem("username", result.username); 
-        
         navigate("/dashboard");
       } else {
-        // Trigger popup error login (username/pass salah)
         setPopupLogin(true);
         setTimeout(() => setPopupLogin(false), 3000); 
       }
     } catch (error) {
-      // Trigger popup error API (server mati/network error)
+      console.error("Login Error:", error);
       setPopupApi(true);
       setTimeout(() => setPopupApi(false), 3000);
     } finally {

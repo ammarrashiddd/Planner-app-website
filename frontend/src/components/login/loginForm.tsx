@@ -5,6 +5,7 @@ import z from "zod"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useState } from "react"
 import { useNavigate } from "react-router"
+import loginImg from "../../assets/images/loginImage.jpg";
 
 export default function LoginForm() {
   const { handleLogin, popUpLogin, popupApi, loading, setPopupLogin, setPopupApi } = useLogin()
@@ -29,7 +30,7 @@ export default function LoginForm() {
       <div className="hidden md:block flex-1 p-4">
         <div className="relative w-full h-full overflow-hidden rounded-2xl">
           <img 
-            src="/src/assets/images/loginImage.jpg" 
+            src={loginImg} 
             alt="Login" 
             className="w-full h-full object-cover grayscale transition-all duration-700 hover:grayscale-0" 
           />

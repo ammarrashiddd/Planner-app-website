@@ -16,31 +16,27 @@ export default function useRegister() {
   const handleRegister = async (data: Inputs) => {
     try {
       setLoading(true)
-
-      // Memisahkan repeatPassword agar tidak ikut masuk ke database
       const { username, password } = data
       const payload = { username, password }
 
-      // PERUBAHAN: Gunakan endpoint '/register' yang ada di server.js kamu
       const response = await fetch("/api/register", { 
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload)
       })
 
+      // Tambahkan ini untuk berjaga-jaga jika ada error dari server
+      const result = await response.json().catch(() => ({}));
 
       if (response.ok) { 
-        // Berhasil! Arahkan ke halaman login
         navigate("/login") 
       } else {
-        // Gagal (misalnya username sudah dipakai)
-        setPopupLogin(true) // Kamu bisa gunakan popup ini untuk error validasi
+        // Kamu bisa log result.message untuk debugging
+        console.log("Register failed:", result.message);
+        setPopupLogin(true) 
         setTimeout(() => setPopupLogin(false), 3000)
       }
     } catch (error) {
-      // Masalah koneksi ke server
       setPopupApi(true)
       setTimeout(() => setPopupApi(false), 3000)
     } finally {

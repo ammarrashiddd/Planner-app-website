@@ -5,6 +5,7 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import useRegister from "../../api/useRegister"
 import { useState } from "react"
 import { useNavigate } from "react-router"
+import registerImg from "../../assets/images/loginImage.jpg";
 
 export default function RegisterForm() {
   const { handleRegister, popUpLogin, popupApi, loading, setPopupLogin, setPopupApi } = useRegister()
@@ -37,7 +38,7 @@ export default function RegisterForm() {
       <div className="hidden md:block flex-1 p-4">
         <div className="relative w-full h-full overflow-hidden rounded-2xl">
            <img 
-            src="/src/assets/images/loginImage.jpg" 
+            src={registerImg} 
             alt="Register" 
             className="w-full h-full object-cover grayscale hover:grayscale-0 transition-all duration-700" 
           />
