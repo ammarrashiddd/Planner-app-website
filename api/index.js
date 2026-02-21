@@ -1,5 +1,5 @@
 require('dotenv').config();
-const { neon } = require('./node_modules/@neondatabase/serverless');
+const { neon } = require('@neondatabase/serverless');
 const sql = neon(process.env.DATABASE_URL); 
 const express = require('express');
 const jwt = require('jsonwebtoken');
