@@ -1,0 +1,15 @@
+@import "tailwindcss";
+
+*, html, body {
+  font-family: 'montserrat';
+  scrollbar-width: none;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}

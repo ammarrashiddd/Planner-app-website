@@ -1,0 +1,56 @@
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+node_modules
+dist
+dist-ssr
+*.local
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Dependency (Folder yang sangat berat, jangan di-upload)
+node_modules/
+dist/
+build/
+
+# Database Lokal (Jika masih ada db.json, jangan di-upload agar tidak bentrok)
+db.json
+
+# ENV VARIABLES (PALING PENTING!)
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# System Files
+.DS_Store
+Thumbs.db
+
+# Tambahkan ini untuk memastikan folder di sub-directory juga terabaikan
+node_modules/
+**/node_modules/
+backend/node_modules/
+frontend/node_modules/
+backend/db.json
+.env
