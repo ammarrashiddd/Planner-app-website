@@ -1,3 +1,4 @@
+require('dotenv').config();
 const express = require('express');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
@@ -5,7 +6,8 @@ const cors = require('cors');
 const fs = require('fs');
 
 const app = express();
-const SECRET_KEY = "planner_super_secret"; // Ganti dengan kunci rahasiamu
+const SECRET_KEY = process.env.JWT_SECRET; 
+const PORT = process.env.PORT;
 
 app.use(express.json());
 app.use(cors());
@@ -79,7 +81,7 @@ app.post('/activities', verifyToken, (req, res) => {
     res.status(201).json(newActivity);
 });
 
-app.listen(3000, () => console.log("Server berjalan di port 3000"));
+app.listen(PORT, () => console.log("Server berjalan di port 3000"));
 
 // --- ENDPOINT HAPUS AKTIVITAS ---
 app.delete('/activities/:id', verifyToken, (req, res) => {
