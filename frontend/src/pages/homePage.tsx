@@ -1,15 +1,9 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 import Calendar from "../components/calendar/calendar";
-
-// --- 1. UNIFIED TYPES ---
-interface Activity {
-  id: number;
-  userId: number;
-  task: string;
-  date: string;
-  status: "In Progress" | "Done";
-}
+import useGetActivities from "../hooks/useGetActivities";
+import usePostActivities from "../hooks/usePostActivities";
+import useDeleteActivities from "../hooks/useDeleteActivities";
 
 interface UserData {
   username: string | null;
@@ -17,11 +11,7 @@ interface UserData {
 }
 
 export default function Dashboard() {
-  // --- 2. STATES ---
-  const [activities, setActivities] = useState<Activity[]>([]);
-  const [newTask, setNewTask] = useState<string>("");
-  const [loading, setLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string>("");
+  // STATES
   const [selectedDate, setSelectedDate] = useState<string>(new Date().toISOString().split('T')[0]);
 
   const navigate = useNavigate();
@@ -32,88 +22,16 @@ export default function Dashboard() {
     token: localStorage.getItem("authToken"),
   };
 
-  // --- 3. LOGIC: FETCH DATA ---
-  const fetchActivities = async () => {
-    if (!auth.token) {
-      navigate("/login");
-      return;
-    }
+  // Hooks
+  const {fetchActivities, activities, loading, error} = useGetActivities(auth)
 
-    try {
-      const res = await fetch("/api/activities", {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${auth.token}`,
-          "Content-Type": "application/json",
-        },
-      });
+  const {handleAddTask, newTask, setNewTask} = usePostActivities(auth, fetchActivities, selectedDate)
 
-      if (res.ok) {
-        const data: Activity[] = await res.json();
-        setActivities(data);
-      } else if (res.status === 401 || res.status === 403) {
-        // Token tidak valid atau expired
-        handleLogout();
-      }
-    } catch (err) {
-      setError("Gagal menyambung ke server.");
-    } finally {
-      setLoading(false);
-    }
-  };
+  const {handleDelete} = useDeleteActivities(auth, fetchActivities)
 
   useEffect(() => {
     fetchActivities();
   }, []);
-
-  // --- 4. LOGIC: ADD TASK ---
-  const handleAddTask = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newTask.trim()) return;
-
-    try {
-      const res = await fetch("/api/activities", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${auth.token}`,
-        },
-        body: JSON.stringify({
-           task: newTask,
-           date: selectedDate
-          }),
-      });
-
-      if (res.ok) {
-        setNewTask("");
-        fetchActivities(); // Refresh list setelah tambah
-      }
-    } catch (err) {
-      alert("Gagal menambah rencana");
-    }
-  };
-
-  // --- 5. LOGIC: DELETE TASK ---
-  const handleDelete = async (id: number) => {
-    if (!window.confirm("Hapus rencana ini?")) return;
-
-    try {
-      const res = await fetch(`/api/activities/${id}`, {
-        method: "DELETE",
-        headers: {
-          Authorization: `Bearer ${auth.token}`,
-        },
-      });
-
-      if (res.ok) {
-        fetchActivities(); // Refresh list setelah hapus
-      } else {
-        alert("Anda tidak memiliki izin untuk menghapus ini.");
-      }
-    } catch (err) {
-      alert("Terjadi kesalahan jaringan.");
-    }
-  };
 
   const handleLogout = () => {
     localStorage.clear();
