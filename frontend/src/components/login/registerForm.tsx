@@ -155,9 +155,9 @@ export default function RegisterForm() {
       </div>
 
       {/* Notifications Layer */}
-      <div className="fixed top-6 right-6 flex flex-col gap-3 z-100">
+      <div className="fixed top-2 right-2 md:top-6 md:right-6 flex flex-col gap-3 z-100">
         {popUpLogin && (
-          <div className="bg-black text-white p-4 rounded-xl shadow-2xl flex items-center gap-4 animate-in fade-in slide-in-from-right-4">
+          <div className="bg-black text-white p-4 rounded-xl shadow-2xl flex items-center gap-2 animate-in fade-in slide-in-from-right-4">
             <div className="bg-red-500 p-2 rounded-lg">
               <WarningIcon size={20} weight="bold" color="white" />
             </div>

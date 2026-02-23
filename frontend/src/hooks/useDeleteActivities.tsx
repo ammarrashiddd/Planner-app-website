@@ -1,7 +1,6 @@
 export default function useDeleteActivities(auth: any, fetchActivities: any) {
 
     const handleDelete = async (id: number) => {
-        if (!window.confirm("Hapus rencana ini?")) return;
 
         try {
         const res = await fetch(`/api/activities/${id}`, {
@@ -17,7 +16,7 @@ export default function useDeleteActivities(auth: any, fetchActivities: any) {
             alert("Anda tidak memiliki izin untuk menghapus ini.");
         }
         } catch (err) {
-        alert("Terjadi kesalahan jaringan.");
+            alert("Terjadi kesalahan jaringan.");
         }
     };
     return {

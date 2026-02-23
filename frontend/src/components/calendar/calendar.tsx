@@ -18,21 +18,21 @@ export default function Calendar({ selectedDate, setSelectedDate, activities }: 
     const nextMonth = () => setCurrentDate(new Date(year, month + 1, 1))
 
     return (
-        <div className="w-full max-w-md bg-white rounded-3xl shadow-xl shadow-gray-200/50 p-6 border border-gray-100">
+        <div className="w-full h-screen bg-white p-2 md:p-6">
             {/* Header: Bulan & Navigasi */}
-            <div className="flex items-center justify-between mb-8 px-2">
+            <div className="flex items-end justify-between mb-8 px-2">
                 <div className="flex flex-col">
                     <span className="text-gray-400 text-xs font-black uppercase tracking-widest">{year}</span>
                     <h2 className="text-2xl font-black text-gray-800 tracking-tighter">
                         {currentDate.toLocaleString("default", { month: "long" })}
                     </h2>
                 </div>
-                <div className="flex gap-2">
-                    <button onClick={prevMonth} className="p-2 hover:bg-gray-100 rounded-xl transition-all active:scale-90">
-                        <ArrowLeftIcon size={22} weight="bold" />
+                <div className="flex gap-4">
+                    <button onClick={prevMonth} className="transition-all active:scale-90 cursor-pointer">
+                        <ArrowLeftIcon size={25} weight="bold" />
                     </button>
-                    <button onClick={nextMonth} className="p-2 hover:bg-gray-100 rounded-xl transition-all active:scale-90">
-                        <ArrowRightIcon size={22} weight="bold" />
+                    <button onClick={nextMonth} className="transition-all active:scale-90 cursor-pointer">
+                        <ArrowRightIcon size={25} weight="bold" />
                     </button>
                 </div>
             </div>

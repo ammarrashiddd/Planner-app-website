@@ -131,9 +131,9 @@ export default function LoginForm() {
         </div>
 
         {/* Notifikasi / Pop-up Floating */}
-        <div className="absolute top-6 right-6 flex flex-col gap-3 z-50">
+        <div className="absolute top-2 right-2 md:top-6 md:right-6 flex flex-col gap-3 z-50">
           {(popUpLogin || popupApi) && (
-            <div className="bg-black text-white p-4 rounded-xl shadow-2xl flex items-center gap-4 animate-[fadeIn_.3s_ease-out]">
+            <div className="bg-black text-white p-3 rounded-xl shadow-2xl flex items-center gap-4 animate-[fadeIn_.3s_ease-out]">
               <div className="bg-red-500 p-2 rounded-lg">
                 <WarningIcon size={20} weight="bold" color="white" />
               </div>
